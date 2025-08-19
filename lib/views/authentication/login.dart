@@ -4,11 +4,6 @@ import 'package:yukmasak/preference/shared_preference.dart';
 import 'package:yukmasak/sqflite/db_helper.dart';
 import 'package:yukmasak/views/authentication/register.dart';
 import 'package:yukmasak/views/main_screen.dart';
-// import 'package:ppkd_b_3/day_12/main_screen.dart';
-// import 'package:ppkd_b_3/day_16/preference/shared_preference.dart';
-// import 'package:ppkd_b_3/day_16/sqflite/db_helper.dart';
-// import 'package:ppkd_b_3/day_16/views/register_screen.dart';
-// import 'package:ppkd_b_3/extension/navigation.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -64,147 +59,168 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  /// Layer utama (konten login)
+  /// Layer utama (konten login) -> dibuat lebih ke atas
   SafeArea buildLayer() {
     return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Center(
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // Logo MasakYuk
-                Image.asset("assets/images/logo_masakyuk.png", height: 100),
-                height(16),
-                Text(
-                  "Welcome Back",
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+      child: Align(
+        alignment: Alignment.topCenter,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 32),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Logo MasakYuk
+              Image.asset(
+                "assets/images/logo/masakyuk.png",
+                width: 300,
+                height: 200,
+                fit: BoxFit.cover,
+              ),
+
+              // const SizedBox(height: 10),
+              const Text(
+                "Welcome Back",
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                "Login to access your account",
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.white.withOpacity(0.9),
+                ),
+              ),
+              const SizedBox(height: 32),
+
+              // Form Email
+              buildTitle("Email Address"),
+              height(8),
+              buildTextField(
+                hintText: "Enter your email",
+                controller: emailController,
+              ),
+              height(16),
+
+              // Form Password
+              buildTitle("Password"),
+              height(8),
+              buildTextField(
+                hintText: "Enter your password",
+                isPassword: true,
+                controller: passwordController,
+              ),
+              height(12),
+
+              // Forgot Password
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  onPressed: () {},
+                  child: const Text(
+                    "Forgot Password?",
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ),
-                height(8),
-                Text(
-                  "Login to access your account",
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.white.withOpacity(0.9),
+              ),
+
+              // Tombol Login
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: login,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFCC5500),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    "Login",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
-                height(24),
-                buildTitle("Email Address"),
-                height(8),
-                buildTextField(
-                  hintText: "Enter your email",
-                  controller: emailController,
-                ),
-                height(16),
-                buildTitle("Password"),
-                height(8),
-                buildTextField(
-                  hintText: "Enter your password",
-                  isPassword: true,
-                  controller: passwordController,
-                ),
-                height(12),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton(
-                    onPressed: () {},
-                    child: Text(
-                      "Forgot Password?",
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.white,
-                        fontWeight: FontWeight.w500,
+              ),
+              const SizedBox(height: 16),
+
+              // Divider Text
+              const Text(
+                "Or Sign In With",
+                style: TextStyle(color: Colors.white),
+              ),
+              const SizedBox(height: 16),
+
+              // Google Button
+              SizedBox(
+                height: 48,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  onPressed: () {
+                    Navigator.pushNamed(context, "/meet_2");
+                  },
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Image.asset(
+                        "assets/images/icons/iconGoogle.png",
+                        height: 20,
+                        width: 20,
                       ),
-                    ),
-                  ),
-                ),
-                height(20),
-                SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: ElevatedButton(
-                    onPressed: login,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFCC5500),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: const Text(
-                      "Login",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
-                height(16),
-                Text("Or Sign In With", style: TextStyle(color: Colors.white)),
-                height(16),
-                SizedBox(
-                  height: 48,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    onPressed: () {
-                      Navigator.pushNamed(context, "/meet_2");
-                    },
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Image.asset(
-                          "assets/images/icon_google.png",
-                          height: 20,
-                          width: 20,
-                        ),
-                        width(8),
-                        const Text(
-                          "Google",
-                          style: TextStyle(
-                            color: Colors.black87,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                height(20),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text(
-                      "Don't have an account?",
-                      style: TextStyle(color: Colors.white),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        context.push(RegisterScreen());
-                      },
-                      child: const Text(
-                        "Sign Up",
+                      width(8),
+                      const Text(
+                        "Google",
                         style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ],
-            ),
+              ),
+
+              // Register link
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text(
+                    "Don't have an account?",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      context.push(RegisterScreen());
+                    },
+                    child: const Text(
+                      "Sign Up",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
       ),

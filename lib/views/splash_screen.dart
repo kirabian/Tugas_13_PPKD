@@ -21,13 +21,19 @@ class _Day16SplashScreenState extends State<Day16SplashScreen> {
   }
 
   void isLogin() async {
+    // Get the login status from shared preferences.
     bool? isLogin = await PreferenceHandler.getLogin();
 
-    Future.delayed(Duration(seconds: 3)).then((value) async {
-      print(isLogin);
+    // Wait for 3 seconds before navigating.
+    Future.delayed(const Duration(seconds: 3)).then((value) {
+      // Check if the widget is still in the widget tree before navigating.
+      if (!mounted) return;
+
       if (isLogin == true) {
+        // If the user is logged in, go to the main screen.
         context.pushReplacementNamed(MainScreen.id);
       } else {
+        // Otherwise, go to the login screen.
         context.push(LoginScreen());
       }
     });
@@ -36,14 +42,13 @@ class _Day16SplashScreenState extends State<Day16SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Image.asset(AppImage.LogoMasak),
-            SizedBox(height: 20),
-            Text("Welcome"),
-          ],
+      // Use SizedBox.expand to make its child fill the entire screen.
+      body: SizedBox.expand(
+        child: Image.asset(
+          AppImage.Background,
+          // BoxFit.cover ensures the image covers the screen,
+          // maintaining its aspect ratio by cropping if necessary.
+          fit: BoxFit.cover,
         ),
       ),
     );

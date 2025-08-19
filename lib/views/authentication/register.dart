@@ -71,7 +71,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
           child: SingleChildScrollView(
             child: Column(
               children: [
-                Image.asset("assets/images/logo_masakyuk.png", height: 100),
+                Image.asset(
+                  "assets/images/logo/masakyuk.png",
+                  height: 150,
+                  width: 250,
+                  fit: BoxFit.cover,
+                ),
                 height(16),
                 const Text(
                   "Create Your Account",
@@ -154,7 +159,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Image.asset(
-                          "assets/images/icon_google.png",
+                          "assets/images/icons/iconGoogle.png",
                           height: 20,
                           width: 20,
                         ),
