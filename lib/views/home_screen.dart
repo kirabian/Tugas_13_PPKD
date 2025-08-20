@@ -5,7 +5,9 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:yukmasak/model/Recipe.dart';
 import 'package:yukmasak/sqflite/db_helper.dart';
-import 'package:yukmasak/views/RecipeDetailPage.dart';
+import 'package:yukmasak/views/Profile_Screen.dart';
+import 'package:yukmasak/views/Recipes/AddRecipeScreen.dart'; // <-- Pastikan import ini ada
+import 'package:yukmasak/views/Recipes/RecipeDetailPage.dart';
 import 'package:yukmasak/views/premium_page.dart';
 import 'package:yukmasak/views/search_page.dart';
 import 'package:yukmasak/widgets/log_out.dart';
@@ -22,9 +24,8 @@ class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
 
   static const List<Widget> _widgetOptions = <Widget>[
-    Text("A"), // placeholder
-    Text("B"),
     LogOutButton(),
+    ProfileScreen(),
   ];
 
   void onDrawerItemTap(int index) {
@@ -34,12 +35,44 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  // Method untuk memicu build ulang widget dan memuat ulang data dari FutureBuilder
+  void _refreshRecipes() {
+    setState(() {
+      // Panggilan setState kosong sudah cukup untuk memberitahu Flutter
+      // agar menjalankan kembali method build()
+    });
+  }
+
+  // Method untuk bernavigasi ke halaman tambah resep
+  // Dibuat async untuk bisa menunggu hasil dari halaman tersebut
+  void _navigateToAddRecipeScreen() async {
+    // 'await' akan menjeda eksekusi sampai AddRecipeScreen ditutup (di-pop)
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const AddRecipeScreen()),
+    );
+
+    // Periksa apakah hasil yang dikembalikan adalah 'true'
+    // 'true' dikirim dari AddRecipeScreen jika resep berhasil disimpan
+    if (result == true) {
+      _refreshRecipes(); // Jika ya, panggil method refresh
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // Menambahkan FloatingActionButton untuk tombol "Tambah Resep"
+      floatingActionButton: FloatingActionButton(
+        onPressed:
+            _navigateToAddRecipeScreen, // Panggil fungsi navigasi saat ditekan
+        backgroundColor: Colors.orange,
+        tooltip: 'Tambah Resep Baru',
+        child: const Icon(Icons.add, color: Colors.white),
+      ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.all(8.0),
+          padding: const EdgeInsets.all(16.0), // Padding yang konsisten
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -84,10 +117,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     TextSpan(
                       text: "Pencarian Populer",
-                      style: TextStyle(fontSize: 24, color: Colors.black),
+                      style: TextStyle(
+                        fontSize: 24,
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     TextSpan(
-                      text: "                               Diperbarui 08:00",
+                      text: "                               Diperbarui 08:00",
                       style: TextStyle(fontSize: 12, color: Colors.grey),
                     ),
                   ],
@@ -144,12 +181,15 @@ class _HomeScreenState extends State<HomeScreen> {
                       const SizedBox(width: 8),
                       const Text(
                         "Premium Recipes",
-                        style: TextStyle(fontSize: 24, color: Colors.black),
+                        style: TextStyle(
+                          fontSize: 24,
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 8),
-
                   ListView(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
@@ -182,59 +222,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                       Divider(color: Colors.grey.shade300),
-                      ListTile(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => PremiumPage(),
-                            ),
-                          );
-                        },
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 8,
-                        ),
-                        leading: ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: Image.asset(
-                            "assets/images/DataResep/steak_mewah.jpg",
-                            width: 100,
-                            height: 100,
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                        title: const Text("Resep Paling Banyak Dilihat"),
-                        subtitle: const Text(
-                          "Resep yang paling banyak dicari dan dilihat",
-                        ),
-                      ),
-                      Divider(color: Colors.grey.shade300),
-                      ListTile(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => PremiumPage(),
-                            ),
-                          );
-                        },
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 8,
-                        ),
-                        leading: ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: Image.asset(
-                            "assets/images/DataResep/icecream_mewah.jpg",
-                            width: 100,
-                            height: 100,
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                        title: const Text("Menu Mingguan Premium"),
-                        subtitle: const Text("Menu spesial untuk kamu"),
-                      ),
+                      // ... (ListTile Premium lainnya)
                     ],
                   ),
                 ],
@@ -245,7 +233,11 @@ class _HomeScreenState extends State<HomeScreen> {
               // Resep Terbaru (dari DB)
               const Text(
                 "Resep Terbaru",
-                style: TextStyle(fontSize: 24, color: Colors.black),
+                style: TextStyle(
+                  fontSize: 24,
+                  color: Colors.black,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 12),
 
@@ -260,7 +252,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       return Center(child: Text('Error: ${snapshot.error}'));
                     } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
                       return const Center(
-                        child: Text('Belum ada resep terbaru'),
+                        child: Text('Belum ada resep, ayo tambahkan!'),
                       );
                     } else {
                       final recipes = snapshot.data!;
@@ -270,7 +262,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         separatorBuilder: (context, index) =>
                             const SizedBox(width: 12),
                         itemBuilder: (context, index) {
-                          final recipe = recipes[index];
+                          // Membalik urutan list agar yang terbaru muncul pertama
+                          final recipe = recipes[recipes.length - 1 - index];
                           return _buildHorizontalFoodCard(recipe);
                         },
                       );
@@ -278,6 +271,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   },
                 ),
               ),
+              // Memberi jarak di bawah agar tidak tertutup oleh FloatingActionButton
+              const SizedBox(height: 80),
             ],
           ),
         ),
@@ -315,6 +310,7 @@ class _HomeScreenState extends State<HomeScreen> {
               alignment: Alignment.center,
               child: Text(
                 title,
+                textAlign: TextAlign.center,
                 style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
@@ -332,6 +328,9 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildHorizontalFoodCard(Recipe recipe) {
     return GestureDetector(
       onTap: () {
+        // Navigasi ke detail page juga perlu 'await' jika ada kemungkinan
+        // data diubah (misal: edit resep) dan ingin refresh setelah kembali.
+        // Untuk saat ini, navigasi biasa sudah cukup.
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -343,6 +342,7 @@ class _HomeScreenState extends State<HomeScreen> {
         width: 160,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
+          color: Colors.white,
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.1),
@@ -356,6 +356,7 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Stack(
             fit: StackFit.expand,
             children: [
+              // Cek apakah path gambar dari asset atau file lokal
               recipe.imagePath.startsWith('assets/')
                   ? Image.asset(recipe.imagePath, fit: BoxFit.cover)
                   : Image.file(File(recipe.imagePath), fit: BoxFit.cover),
@@ -364,13 +365,15 @@ class _HomeScreenState extends State<HomeScreen> {
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [Colors.black.withOpacity(0.6), Colors.transparent],
+                    colors: [Colors.black.withOpacity(0.7), Colors.transparent],
                     begin: Alignment.bottomCenter,
-                    end: Alignment.topCenter,
+                    end: Alignment.center,
                   ),
                 ),
                 child: Text(
                   recipe.title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,

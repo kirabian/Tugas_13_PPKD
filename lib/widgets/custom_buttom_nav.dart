@@ -16,10 +16,7 @@ class CustomBottomNav extends StatelessWidget {
       items: const <BottomNavigationBarItem>[
         BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Cari Resep'),
         // BottomNavigationBarItem(icon: Icon(Icons.business), label: 'Business'),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.collections_bookmark),
-          label: 'Koleksi Resep',
-        ),
+        BottomNavigationBarItem(icon: Icon(Icons.person_4), label: 'Profile'),
       ],
       currentIndex: currentIndex,
       selectedItemColor: Colors.blue,

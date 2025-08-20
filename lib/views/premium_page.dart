@@ -1,7 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class PremiumPage extends StatelessWidget {
   const PremiumPage({super.key});
+
+  // Ganti dengan username Saweria kamu
+  final String saweriaUsername = "Rubaku";
+
+  Future<void> _launchSaweria() async {
+    final Uri url = Uri.parse("https://saweria.co/Rubaku?nominal=9900");
+
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url, mode: LaunchMode.externalApplication);
+    } else {
+      throw Exception("Tidak bisa membuka Saweria");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +41,7 @@ class PremiumPage extends StatelessWidget {
             ),
             const SizedBox(height: 24),
 
-            // Contoh list benefit premium
+            // Benefit List
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: const [
@@ -45,33 +59,40 @@ class PremiumPage extends StatelessWidget {
                 ),
               ],
             ),
+
             const Spacer(),
 
-            // Tombol langganan
+            // Harga + Tombol
             Center(
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 40,
-                    vertical: 16,
-                  ),
-                  backgroundColor: Colors.amber.shade700,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                onPressed: () {
-                  // TODO: Arahkan ke halaman pembayaran / subscription
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text("Fitur langganan coming soon!"),
+              child: Column(
+                children: [
+                  const Text(
+                    "Harga: Rp9.900,00 / minggu",
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
                     ),
-                  );
-                },
-                child: const Text(
-                  "Langganan Sekarang",
-                  style: TextStyle(fontSize: 18, color: Colors.white),
-                ),
+                  ),
+                  const SizedBox(height: 12),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 40,
+                        vertical: 16,
+                      ),
+                      backgroundColor: Colors.amber.shade700,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    onPressed: _launchSaweria,
+                    child: const Text(
+                      "Langganan Sekarang",
+                      style: TextStyle(fontSize: 18, color: Colors.white),
+                    ),
+                  ),
+                ],
               ),
             ),
           ],

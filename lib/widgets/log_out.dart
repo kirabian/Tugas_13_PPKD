@@ -4,6 +4,7 @@ import 'package:yukmasak/preference/shared_preference.dart';
 import 'package:yukmasak/views/authentication/login.dart';
 
 class LogOutButton extends StatelessWidget {
+  static const id = "/logout";
   const LogOutButton({super.key});
 
   @override

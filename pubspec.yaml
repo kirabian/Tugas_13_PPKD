@@ -46,6 +46,7 @@ dependencies:
   responsive_navigation_bar: ^5.0.2
   shared_preferences: ^2.5.3
   sqflite: ^2.4.2
+  url_launcher: ^6.3.2
 
 dev_dependencies:
   flutter_lints: ^5.0.0

@@ -1,5 +1,3 @@
-// lib/views/AddRecipeScreen.dart
-
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -8,7 +6,9 @@ import 'package:yukmasak/model/Recipe.dart';
 import 'package:yukmasak/sqflite/db_helper.dart';
 
 class AddRecipeScreen extends StatefulWidget {
-  const AddRecipeScreen({super.key});
+  final Recipe? recipe; // null = tambah, ada isi = edit
+
+  const AddRecipeScreen({super.key, this.recipe});
 
   @override
   State<AddRecipeScreen> createState() => _AddRecipeScreenState();
@@ -21,15 +21,40 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
   File? _selectedImage;
   bool _isPremium = false;
 
-  // Untuk bahan-bahan
-  final List<TextEditingController> _ingredientControllers = [
-    TextEditingController(),
-  ];
+  final List<TextEditingController> _ingredientControllers = [];
+  final List<TextEditingController> _stepControllers = [];
 
-  // Untuk langkah-langkah
-  final List<TextEditingController> _stepControllers = [
-    TextEditingController(),
-  ];
+  @override
+  void initState() {
+    super.initState();
+
+    // Kalau edit mode → isi field dengan data lama
+    if (widget.recipe != null) {
+      _titleController.text = widget.recipe!.title;
+      _descController.text = widget.recipe!.description;
+      _isPremium = widget.recipe!.isPremium == 1;
+      _selectedImage = File(widget.recipe!.imagePath);
+
+      // pecah string ke list lalu isi controller
+      final ingredients = widget.recipe!.ingredients.split('||');
+      final steps = widget.recipe!.steps.split('||');
+
+      for (var i in ingredients) {
+        _ingredientControllers.add(TextEditingController(text: i));
+      }
+      for (var s in steps) {
+        _stepControllers.add(TextEditingController(text: s));
+      }
+    }
+
+    // Kalau mode tambah → kasih minimal 1 field kosong
+    if (_ingredientControllers.isEmpty) {
+      _ingredientControllers.add(TextEditingController());
+    }
+    if (_stepControllers.isEmpty) {
+      _stepControllers.add(TextEditingController());
+    }
+  }
 
   Future<void> _pickImage() async {
     final pickedFile = await ImagePicker().pickImage(
@@ -44,16 +69,14 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
 
   Future<void> _saveRecipe() async {
     if (_formKey.currentState!.validate() && _selectedImage != null) {
-      // Konversi bahan-bahan ke List<String>
       final ingredients = _ingredientControllers
-          .where((controller) => controller.text.isNotEmpty)
-          .map((controller) => controller.text)
+          .where((c) => c.text.isNotEmpty)
+          .map((c) => c.text)
           .toList();
 
-      // Konversi langkah-langkah ke List<String>
       final steps = _stepControllers
-          .where((controller) => controller.text.isNotEmpty)
-          .map((controller) => controller.text)
+          .where((c) => c.text.isNotEmpty)
+          .map((c) => c.text)
           .toList();
 
       if (ingredients.isEmpty || steps.isEmpty) {
@@ -67,6 +90,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
       }
 
       final recipe = Recipe(
+        id: widget.recipe?.id, // penting untuk update
         title: _titleController.text,
         description: _descController.text,
         imagePath: _selectedImage!.path,
@@ -76,13 +100,22 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
       );
 
       try {
-        await DbHelper.insertRecipe(recipe);
-
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Resep berhasil ditambahkan!")),
-        );
-        Navigator.pop(context);
+        if (widget.recipe == null) {
+          // tambah baru
+          await DbHelper.insertRecipe(recipe);
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Resep berhasil ditambahkan!")),
+          );
+        } else {
+          // update
+          await DbHelper.updateRecipe(recipe);
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Resep berhasil diperbarui!")),
+          );
+        }
+        Navigator.pop(context, true);
       } catch (e) {
         if (!mounted) return;
         ScaffoldMessenger.of(
@@ -97,30 +130,22 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
   }
 
   void _addIngredientField() {
-    setState(() {
-      _ingredientControllers.add(TextEditingController());
-    });
+    setState(() => _ingredientControllers.add(TextEditingController()));
   }
 
   void _removeIngredientField(int index) {
     if (_ingredientControllers.length > 1) {
-      setState(() {
-        _ingredientControllers.removeAt(index);
-      });
+      setState(() => _ingredientControllers.removeAt(index));
     }
   }
 
   void _addStepField() {
-    setState(() {
-      _stepControllers.add(TextEditingController());
-    });
+    setState(() => _stepControllers.add(TextEditingController()));
   }
 
   void _removeStepField(int index) {
     if (_stepControllers.length > 1) {
-      setState(() {
-        _stepControllers.removeAt(index);
-      });
+      setState(() => _stepControllers.removeAt(index));
     }
   }
 
@@ -128,19 +153,21 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
   void dispose() {
     _titleController.dispose();
     _descController.dispose();
-    for (var controller in _ingredientControllers) {
-      controller.dispose();
+    for (var c in _ingredientControllers) {
+      c.dispose();
     }
-    for (var controller in _stepControllers) {
-      controller.dispose();
+    for (var c in _stepControllers) {
+      c.dispose();
     }
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final isEdit = widget.recipe != null;
+
     return Scaffold(
-      appBar: AppBar(title: const Text("Tambah Resep Baru")),
+      appBar: AppBar(title: Text(isEdit ? "Edit Resep" : "Tambah Resep Baru")),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Form(
@@ -149,14 +176,14 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Judul Resep
+                // Judul
                 TextFormField(
                   controller: _titleController,
                   decoration: const InputDecoration(
                     labelText: "Judul Resep",
                     border: OutlineInputBorder(),
                   ),
-                  validator: (value) => value == null || value.isEmpty
+                  validator: (v) => v == null || v.isEmpty
                       ? "Judul tidak boleh kosong"
                       : null,
                 ),
@@ -170,7 +197,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                     labelText: "Deskripsi",
                     border: OutlineInputBorder(),
                   ),
-                  validator: (value) => value == null || value.isEmpty
+                  validator: (v) => v == null || v.isEmpty
                       ? "Deskripsi tidak boleh kosong"
                       : null,
                 ),
@@ -202,7 +229,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                 ),
                 const SizedBox(height: 24),
 
-                // Bahan-bahan
+                // Bahan
                 const Text(
                   "Bahan-bahan:",
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -213,32 +240,18 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                   final controller = entry.value;
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 8),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: TextFormField(
-                            controller: controller,
-                            decoration: InputDecoration(
-                              labelText: "Bahan ${index + 1}",
-                              border: const OutlineInputBorder(),
-                              suffixIcon: _ingredientControllers.length > 1
-                                  ? IconButton(
-                                      icon: const Icon(Icons.remove),
-                                      onPressed: () =>
-                                          _removeIngredientField(index),
-                                    )
-                                  : null,
-                            ),
-                            validator: (value) {
-                              if (index == 0 &&
-                                  (value == null || value.isEmpty)) {
-                                return "Minimal 1 bahan diperlukan";
-                              }
-                              return null;
-                            },
-                          ),
-                        ),
-                      ],
+                    child: TextFormField(
+                      controller: controller,
+                      decoration: InputDecoration(
+                        labelText: "Bahan ${index + 1}",
+                        border: const OutlineInputBorder(),
+                        suffixIcon: _ingredientControllers.length > 1
+                            ? IconButton(
+                                icon: const Icon(Icons.remove),
+                                onPressed: () => _removeIngredientField(index),
+                              )
+                            : null,
+                      ),
                     ),
                   );
                 }),
@@ -252,7 +265,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                // Langkah-langkah
+                // Langkah
                 const Text(
                   "Langkah-langkah:",
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -263,32 +276,19 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                   final controller = entry.value;
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 8),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: TextFormField(
-                            controller: controller,
-                            maxLines: 2,
-                            decoration: InputDecoration(
-                              labelText: "Langkah ${index + 1}",
-                              border: const OutlineInputBorder(),
-                              suffixIcon: _stepControllers.length > 1
-                                  ? IconButton(
-                                      icon: const Icon(Icons.remove),
-                                      onPressed: () => _removeStepField(index),
-                                    )
-                                  : null,
-                            ),
-                            validator: (value) {
-                              if (index == 0 &&
-                                  (value == null || value.isEmpty)) {
-                                return "Minimal 1 langkah diperlukan";
-                              }
-                              return null;
-                            },
-                          ),
-                        ),
-                      ],
+                    child: TextFormField(
+                      controller: controller,
+                      maxLines: 2,
+                      decoration: InputDecoration(
+                        labelText: "Langkah ${index + 1}",
+                        border: const OutlineInputBorder(),
+                        suffixIcon: _stepControllers.length > 1
+                            ? IconButton(
+                                icon: const Icon(Icons.remove),
+                                onPressed: () => _removeStepField(index),
+                              )
+                            : null,
+                      ),
                     ),
                   );
                 }),
@@ -302,7 +302,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                 ),
                 const SizedBox(height: 24),
 
-                // Tombol Simpan
+                // Tombol
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
@@ -311,16 +311,16 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                       backgroundColor: Colors.orange,
                       padding: const EdgeInsets.symmetric(vertical: 14),
                     ),
-                    child: const Text(
-                      "Simpan Resep",
-                      style: TextStyle(fontSize: 18, color: Colors.white),
+                    child: Text(
+                      isEdit ? "Update Resep" : "Simpan Resep",
+                      style: const TextStyle(fontSize: 18, color: Colors.white),
                     ),
                   ),
                 ),
 
                 const SizedBox(height: 16),
 
-                // Checkbox Premium di bawah tombol dengan card
+                // Premium
                 Card(
                   color: Colors.orange.shade50,
                   shape: RoundedRectangleBorder(
@@ -335,11 +335,8 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                       children: [
                         Checkbox(
                           value: _isPremium,
-                          onChanged: (value) {
-                            setState(() {
-                              _isPremium = value ?? false;
-                            });
-                          },
+                          onChanged: (v) =>
+                              setState(() => _isPremium = v ?? false),
                           activeColor: Colors.orange,
                         ),
                         const SizedBox(width: 8),

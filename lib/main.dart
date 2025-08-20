@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:yukmasak/views/authentication/login.dart';
 import 'package:yukmasak/views/main_screen.dart';
 import 'package:yukmasak/views/splash_screen.dart';
+import 'package:yukmasak/widgets/log_out.dart';
 
 void main() {
   // initializeDateFormatting("id_ID");
@@ -43,6 +44,7 @@ class MyApp extends StatelessWidget {
         Day16SplashScreen.id: (context) => Day16SplashScreen(),
         // Day7GridView.id: (context) => Day7GridView(),
         MainScreen.id: (context) => MainScreen(),
+        LogOutButton.id: (context) => const LogOutButton(),
       },
       // home: LoginScreen(),
 

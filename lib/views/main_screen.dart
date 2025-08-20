@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:yukmasak/views/AddRecipeScreen.dart';
+import 'package:yukmasak/views/Profile_Screen.dart';
+import 'package:yukmasak/views/Recipes/AddRecipeScreen.dart';
 import 'package:yukmasak/views/home_screen.dart';
 import 'package:yukmasak/widgets/custom_buttom_nav.dart';
 import 'package:yukmasak/widgets/custom_drawer.dart';
-import 'package:yukmasak/widgets/log_out.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -18,8 +18,9 @@ class _MainScreenState extends State<MainScreen> {
 
   static const List<Widget> _widgetOptions = <Widget>[
     HomeScreen(),
-    Text("B"),
-    LogOutButton(),
+    ProfileScreen(),
+    // Text("B"),
+    // LogOutButton(),
   ];
 
   void onDrawerItemTap(int index) {
