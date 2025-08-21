@@ -29,7 +29,6 @@ class CustomDrawer extends StatelessWidget {
           // ListTile(title: const Text("Day 14"), onTap: () => onItemTap(3)),
           // ListTile(title: const Text("Day 15"), onTap: () => onItemTap(4)),
           // ListTile(title: const Text("Day 16"), onTap: () => onItemTap(5)),
-          Spacer(),
           ListTile(
             title: const Text("Logout"),
             onTap: () {

@@ -4,6 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:yukmasak/model/Recipe.dart';
 import 'package:yukmasak/sqflite/db_helper.dart';
+import 'package:yukmasak/views/widgets/recipes/image_picker_field.dart';
+import 'package:yukmasak/views/widgets/recipes/ingredient_list.dart';
+import 'package:yukmasak/views/widgets/recipes/premium_checkbox.dart';
+import 'package:yukmasak/views/widgets/recipes/step_list.dart';
 
 class AddRecipeScreen extends StatefulWidget {
   final Recipe? recipe; // null = tambah, ada isi = edit
@@ -18,6 +22,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _descController = TextEditingController();
+
   File? _selectedImage;
   bool _isPremium = false;
 
@@ -35,7 +40,6 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
       _isPremium = widget.recipe!.isPremium == 1;
       _selectedImage = File(widget.recipe!.imagePath);
 
-      // pecah string ke list lalu isi controller
       final ingredients = widget.recipe!.ingredients.split('||');
       final steps = widget.recipe!.steps.split('||');
 
@@ -90,7 +94,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
       }
 
       final recipe = Recipe(
-        id: widget.recipe?.id, // penting untuk update
+        id: widget.recipe?.id,
         title: _titleController.text,
         description: _descController.text,
         imagePath: _selectedImage!.path,
@@ -101,14 +105,12 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
 
       try {
         if (widget.recipe == null) {
-          // tambah baru
           await DbHelper.insertRecipe(recipe);
           if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text("Resep berhasil ditambahkan!")),
           );
         } else {
-          // update
           await DbHelper.updateRecipe(recipe);
           if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(
@@ -126,26 +128,6 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Lengkapi form dan pilih gambar!")),
       );
-    }
-  }
-
-  void _addIngredientField() {
-    setState(() => _ingredientControllers.add(TextEditingController()));
-  }
-
-  void _removeIngredientField(int index) {
-    if (_ingredientControllers.length > 1) {
-      setState(() => _ingredientControllers.removeAt(index));
-    }
-  }
-
-  void _addStepField() {
-    setState(() => _stepControllers.add(TextEditingController()));
-  }
-
-  void _removeStepField(int index) {
-    if (_stepControllers.length > 1) {
-      setState(() => _stepControllers.removeAt(index));
     }
   }
 
@@ -204,105 +186,35 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                 const SizedBox(height: 16),
 
                 // Gambar
-                Row(
-                  children: [
-                    _selectedImage != null
-                        ? Image.file(
-                            _selectedImage!,
-                            width: 100,
-                            height: 100,
-                            fit: BoxFit.cover,
-                          )
-                        : Container(
-                            width: 100,
-                            height: 100,
-                            color: Colors.grey.shade300,
-                            child: const Icon(Icons.image, size: 40),
-                          ),
-                    const SizedBox(width: 12),
-                    ElevatedButton.icon(
-                      onPressed: _pickImage,
-                      icon: const Icon(Icons.upload),
-                      label: const Text("Pilih Gambar"),
-                    ),
-                  ],
+                ImagePickerField(
+                  selectedImage: _selectedImage,
+                  onPickImage: _pickImage,
                 ),
                 const SizedBox(height: 24),
 
                 // Bahan
-                const Text(
-                  "Bahan-bahan:",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 8),
-                ..._ingredientControllers.asMap().entries.map((entry) {
-                  final index = entry.key;
-                  final controller = entry.value;
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: TextFormField(
-                      controller: controller,
-                      decoration: InputDecoration(
-                        labelText: "Bahan ${index + 1}",
-                        border: const OutlineInputBorder(),
-                        suffixIcon: _ingredientControllers.length > 1
-                            ? IconButton(
-                                icon: const Icon(Icons.remove),
-                                onPressed: () => _removeIngredientField(index),
-                              )
-                            : null,
-                      ),
-                    ),
-                  );
-                }),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton.icon(
-                    onPressed: _addIngredientField,
-                    icon: const Icon(Icons.add),
-                    label: const Text("Tambah Bahan"),
+                IngredientList(
+                  ingredientControllers: _ingredientControllers,
+                  onAdd: () => setState(
+                    () => _ingredientControllers.add(TextEditingController()),
                   ),
+                  onRemove: (index) =>
+                      setState(() => _ingredientControllers.removeAt(index)),
                 ),
                 const SizedBox(height: 16),
 
                 // Langkah
-                const Text(
-                  "Langkah-langkah:",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 8),
-                ..._stepControllers.asMap().entries.map((entry) {
-                  final index = entry.key;
-                  final controller = entry.value;
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: TextFormField(
-                      controller: controller,
-                      maxLines: 2,
-                      decoration: InputDecoration(
-                        labelText: "Langkah ${index + 1}",
-                        border: const OutlineInputBorder(),
-                        suffixIcon: _stepControllers.length > 1
-                            ? IconButton(
-                                icon: const Icon(Icons.remove),
-                                onPressed: () => _removeStepField(index),
-                              )
-                            : null,
-                      ),
-                    ),
-                  );
-                }),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton.icon(
-                    onPressed: _addStepField,
-                    icon: const Icon(Icons.add),
-                    label: const Text("Tambah Langkah"),
+                StepList(
+                  stepControllers: _stepControllers,
+                  onAdd: () => setState(
+                    () => _stepControllers.add(TextEditingController()),
                   ),
+                  onRemove: (index) =>
+                      setState(() => _stepControllers.removeAt(index)),
                 ),
                 const SizedBox(height: 24),
 
-                // Tombol
+                // Tombol Simpan
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
@@ -317,42 +229,12 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 16),
 
                 // Premium
-                Card(
-                  color: Colors.orange.shade50,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
-                    ),
-                    child: Row(
-                      children: [
-                        Checkbox(
-                          value: _isPremium,
-                          onChanged: (v) =>
-                              setState(() => _isPremium = v ?? false),
-                          activeColor: Colors.orange,
-                        ),
-                        const SizedBox(width: 8),
-                        const Expanded(
-                          child: Text(
-                            "Tandai sebagai Resep Premium",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.orange,
-                            ),
-                          ),
-                        ),
-                        const Icon(Icons.star, color: Colors.orange),
-                      ],
-                    ),
-                  ),
+                PremiumCheckbox(
+                  value: _isPremium,
+                  onChanged: (v) => setState(() => _isPremium = v ?? false),
                 ),
               ],
             ),
